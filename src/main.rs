@@ -4,26 +4,21 @@ use std::str::FromStr;
 
 use core::fmt::Debug;
 
+use chatgpt_proxy_server::*;
 use hyper::server::conn::AddrStream;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Client, Request, Response, Server, Uri};
 use hyper_tls::HttpsConnector;
 use lazy_static::lazy_static;
 
-// import lib.rs
-mod lib;
-
-// create config struct
-
 use dotenv;
 use tokio::sync::Mutex;
 
-#[derive(Debug)]
+// create config struct
 struct Config {
     chatgpt_url: String,
     ratelimit: u32,
 }
-
 
 lazy_static! {
     static ref CONFIG: Config = {
@@ -51,14 +46,17 @@ impl Debug for CONFIG {
 }
 
 lazy_static! {
-    static ref RATE_LIMITER: Mutex<lib::RateLimiter> = Mutex::new(lib::RateLimiter::new(
-        CONFIG.ratelimit
-    ));
+    static ref RATE_LIMITER: Mutex<RateLimiter> = Mutex::new(RateLimiter::new(CONFIG.ratelimit));
 }
 
 async fn proxy(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
-    let client_ip = &req.extensions().get::<SocketAddr>().unwrap().ip().to_string();
-    // Read Client IP read form header or client 
+    let client_ip = &req
+        .extensions()
+        .get::<SocketAddr>()
+        .unwrap()
+        .ip()
+        .to_string();
+    // Read Client IP read form header or client
     let real_ip = req
         .headers()
         .get("X-Forwarded-For")
@@ -129,9 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             }))
         }
     });
-    let server = Server::bind(&addr).serve(
-        service
-    );
+    let server = Server::bind(&addr).serve(service);
     // print config
     println!("Config: {:?}", CONFIG);
     println!("Listening on http://{}", addr);
