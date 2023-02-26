@@ -1,4 +1,4 @@
-FROM rust:1.51 as builder
+FROM rust:1.65 as builder
 COPY . .
 RUN cargo build --release
 FROM debian:buster-slim
