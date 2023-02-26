@@ -8,7 +8,7 @@
 
 > ChatGPT unofficial reverse proxy service
 
-### ✨ [Demo](chat.y1s1.host)
+### ✨ [Demo]([chat.y1s1.host](https://proxy.y1s1.host/))
 
 ## Usage
 
