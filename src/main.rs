@@ -84,11 +84,23 @@ async fn proxy(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
     // Create new uri
     let uri = Uri::from_str(&format!("{}{}", CONFIG.chatgpt_url, path_and_query,)).unwrap();
     println!("uri: {:?}", uri);
+    // if req header Authorization is null, set empty
+    let authorization = if let Some(value) = req.headers().get("Authorization") {
+        value.to_str().unwrap()
+    } else {
+        ""
+    };
+    let content_type =  if let Some(value) = req.headers().get("Content-Type") {
+        value.to_str().unwrap()
+    } else {
+        "application/json"
+    };
+
     let request_builder = Request::builder().method(req.method())
         .uri(uri)
         .header("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.50")
-        .header("Authorization", req.headers().get("Authorization").unwrap().to_str().unwrap_or_else(|_| "null"))
-        .header("Content-Type", req.headers().get("Content-Type").unwrap().to_str().unwrap_or_else(|_| "application/json"));
+        .header("Authorization", authorization)
+        .header("Content-Type", content_type);
 
     let response = client
         .request(request_builder.body(req.into_body()).unwrap())
